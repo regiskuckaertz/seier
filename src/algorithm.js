@@ -5,14 +5,21 @@ import {
 
 import * as dom from "./dom.js";
 
+export default Algo;
+
 const identity = map((x) => x);
 
 function Algo() {
     this.transducer = identity;
 }
 
-for( let key in dom ) {
-    Algo.prototype[key] = function(fn) {
+Algo.prototype.run = () => item instanceof Node ?
+    into([], this.transducer, [item])[0] :
+    into([], this.transducer, item);
+
+let keys = Object.keys(dom);
+for( let key of keys ) {
+    Algo.prototype[key] = (fn) => {
         this.transducer = compose(map(fn), this.transducer);
         return this;
     }

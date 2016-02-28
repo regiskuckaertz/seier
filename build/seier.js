@@ -15,7 +15,7 @@ var seier = (function () { 'use strict';
         reduce(xform, init, coll);
     }
 
-    function into(dest, xform, source) {
+    function into$1(dest, xform, source) {
         return isString(dest) ? transduce(xform, append, source, dest) : isArray(dest) ? transduce(xform, push, source, dest) : isObject(dest) ? transduce(xform, set, source, dest) : dest;
     }
 
@@ -559,7 +559,7 @@ var seier = (function () { 'use strict';
         dedupe: dedupe,
         randomSample: randomSample,
         transduce: transduce,
-        into: into
+        into: into$1
     });
 
     function memoize(fn, arity) {
@@ -752,7 +752,7 @@ var seier = (function () { 'use strict';
     var multivalXform = map(curry(getProp, 'value'));
 
     function getVal(el) {
-        return el.tagName === 'SELECT' && el.multiple ? into([], multivalXform, el.selectedOptions) : getProp('value', el);
+        return el.tagName === 'SELECT' && el.multiple ? into$1([], multivalXform, el.selectedOptions) : getProp('value', el);
     }
 
     var setVal = curry(setProp, 'value');
@@ -808,7 +808,7 @@ var seier = (function () { 'use strict';
     });
 
     function filterChildren(el, sel) {
-        return into([], filterChildrenXForm, el.children);
+        return into$1([], filterChildrenXForm, el.children);
     }
 
     function children(el, sel) {
@@ -871,9 +871,48 @@ var seier = (function () { 'use strict';
         setCss: setCss
     });
 
+    var _this = this;
+
     var identity = map$1(function (x) {
         return x;
     });
+
+    function Algo() {
+        this.transducer = identity;
+    }
+
+    Algo.prototype.run = function () {
+        return item instanceof Node ? into([], _this.transducer, [item])[0] : into([], _this.transducer, item);
+    };
+
+    var keys = Object.keys(dom);
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var key = _step.value;
+
+            Algo.prototype[key] = function (fn) {
+                _this.transducer = compose(map$1(fn), _this.transducer);
+                return _this;
+            };
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
 
     var seier = {
         dom: dom,
