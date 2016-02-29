@@ -1,8 +1,5 @@
-import {
-    compose,
-    map
-} from "./transducers.js";
-
+import { compose, map } from "./transducers.js";
+import { curry } from "./functions.js";
 import * as dom from "./dom.js";
 
 export default Algo;
@@ -19,8 +16,8 @@ Algo.prototype.run = () => item instanceof Node ?
 
 let keys = Object.keys(dom);
 for( let key of keys ) {
-    Algo.prototype[key] = (fn) => {
-        this.transducer = compose(map(fn), this.transducer);
+    Algo.prototype[key] = (...args) => {
+        this.transducer = compose(map(curry(dom[key], ...args)), this.transducer);
         return this;
     }
 }

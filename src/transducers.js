@@ -131,7 +131,7 @@ function iterableReduce(fn, init, iter) {
 
 function objectReduce(fn, init, obj) {
     let keys = Object.keys(obj);
-    for( let key in keys ) {
+    for( let key of keys ) {
         init = fn.step(init, obj[key]);
         if( isReduced(init) ) {
             init = deref(init);
