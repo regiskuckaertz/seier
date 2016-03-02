@@ -2,11 +2,11 @@ import { compose, map } from "./transducers.js";
 import { curry } from "./functions.js";
 import * as dom from "./dom.js";
 
-export default Algo;
+export default DomAlgorithm;
 
 const identity = map((x) => x);
 
-function Algo() {
+function DomAlgorithm() {
     let transducer = identity;
     let proto = {};
 

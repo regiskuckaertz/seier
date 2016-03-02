@@ -897,10 +897,38 @@ var seier = (function () { 'use strict';
         return x;
     });
 
-    var seier = {
-        dom: dom,
-        transducers: transducers
-    };
+    function DomAlgorithm() {
+        var _this = this;
+
+        var transducer = identity;
+        var proto = {};
+
+        function run(item) {
+            return item instanceof Node ? into([], transducer, [item])[0] : into([], transducer, item);
+        }
+
+        Object.keys(dom).forEach(function (key) {
+            return proto[key] = function () {
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                    args[_key] = arguments[_key];
+                }
+
+                transducer = compose(map$1(curry.apply(undefined, [dom[key]].concat(args))), transducer);
+                return _this;
+            };
+        });
+
+        proto.run = run;
+
+        return Object.freeze(proto);
+    }
+
+    function seier() {
+        return DomAlgorithm();
+    }
+
+    seier.dom = dom;
+    seier.coll = transducers;
 
     return seier;
 
