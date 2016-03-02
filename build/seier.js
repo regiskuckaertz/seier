@@ -136,13 +136,35 @@ var seier = (function () { 'use strict';
 
     function objectReduce(fn, init, obj) {
         var keys = Object.keys(obj);
-        for (var key in keys) {
-            init = fn.step(init, obj[key]);
-            if (isReduced(init)) {
-                init = deref(init);
-                break;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+            for (var _iterator3 = keys[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var key = _step3.value;
+
+                init = fn.step(init, obj[key]);
+                if (isReduced(init)) {
+                    init = deref(init);
+                    break;
+                }
+            }
+        } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                    _iterator3.return();
+                }
+            } finally {
+                if (_didIteratorError3) {
+                    throw _iteratorError3;
+                }
             }
         }
+
         return fn.result(init);
     }
 
@@ -871,48 +893,9 @@ var seier = (function () { 'use strict';
         setCss: setCss
     });
 
-    var _this = this;
-
     var identity = map$1(function (x) {
         return x;
     });
-
-    function Algo() {
-        this.transducer = identity;
-    }
-
-    Algo.prototype.run = function () {
-        return item instanceof Node ? into([], _this.transducer, [item])[0] : into([], _this.transducer, item);
-    };
-
-    var keys = Object.keys(dom);
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-        for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var key = _step.value;
-
-            Algo.prototype[key] = function (fn) {
-                _this.transducer = compose(map$1(fn), _this.transducer);
-                return _this;
-            };
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-            }
-        } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
-            }
-        }
-    }
 
     var seier = {
         dom: dom,
