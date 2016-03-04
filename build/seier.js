@@ -209,6 +209,7 @@ var seier = (function () { 'use strict';
             init: function init() {
                 throw new Error("There is no init call for a wrapped reducer");
             },
+
             result: function result(_result) {
                 return _result;
             },
@@ -219,12 +220,8 @@ var seier = (function () { 'use strict';
     function map$1(fn) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result2) {
-                    return xf.result(_result2);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return xf.step(result, fn(input));
                 }
@@ -235,12 +232,8 @@ var seier = (function () { 'use strict';
     function filter(pred) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result3) {
-                    return xf.result(_result3);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return pred(input) ? xf.result(result, input) : result;
                 }
@@ -260,12 +253,8 @@ var seier = (function () { 'use strict';
 
     function cat(xf) {
         return Object.freeze({
-            init: function init() {
-                return xf.init();
-            },
-            result: function result(_result4) {
-                return xf.result(_result4);
-            },
+            init: xf.init,
+            result: xf.result,
             step: function step(result, input) {
                 return reduce(xf, result, input);
             }
@@ -289,12 +278,8 @@ var seier = (function () { 'use strict';
     function take(n) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result5) {
-                    return xf.result(_result5);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return n === 0 ? ensureReduced(result) : (n--, xf.step(result, input));
                 }
@@ -305,12 +290,8 @@ var seier = (function () { 'use strict';
     function drop(n) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result6) {
-                    return xf.result(_result6);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return n === 0 ? xf.step(result, input) : (n--, result);
                 }
@@ -321,12 +302,8 @@ var seier = (function () { 'use strict';
     function takeWhile(pred) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result7) {
-                    return xf.result(_result7);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return pred(input) ? xf.step(result, input) : ensureReduced(result);
                 }
@@ -338,14 +315,14 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var dropping = true;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result8) {
-                    return xf.result(_result8);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
-                    return dropping && pred(input) ? result : (dropping = false, xf.step(result, input));
+                    if (dropping && pred(input)) {
+                        return result;
+                    }
+                    dropping = false;
+                    return xf.step(result, input);
                 }
             });
         };
@@ -355,12 +332,8 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var n = 0;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result9) {
-                    return xf.result(_result9);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     n++;
                     return n % nth === 0 ? xf.step(result, input) : result;
@@ -372,12 +345,8 @@ var seier = (function () { 'use strict';
     function replace(smap) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result10) {
-                    return xf.result(_result10);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return xf.step(result, smap.hasOwnProperty(input) ? smap[input] : input);
                 }
@@ -390,15 +359,13 @@ var seier = (function () { 'use strict';
             var arr = [];
             var pval = void 0;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result11) {
+                init: xf.init,
+                result: function result(_result2) {
                     if (arr.length) {
-                        _result11 = unreduced(xf.step(_result11, arr));
+                        _result2 = unreduced(xf.step(_result2, arr));
                         arr = [];
                     }
-                    return xf.result(_result11);
+                    return xf.result(_result2);
                 },
                 step: function step(result, input) {
                     var val = fn(input);
@@ -424,15 +391,13 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var arr = [];
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result12) {
+                init: xf.init,
+                result: function result(_result3) {
                     if (arr.length) {
-                        _result12 = unreduced(xf.step(_result12, arr));
+                        _result3 = unreduced(xf.step(_result3, arr));
                         arr = [];
                     }
-                    return xf.result(_result12);
+                    return xf.result(_result3);
                 },
                 step: function step(result, input) {
                     arr.push(input);
@@ -449,12 +414,8 @@ var seier = (function () { 'use strict';
     function keep(fn) {
         return function (xf) {
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result13) {
-                    return xf.result(_result13);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return fn(input) == null ? result : xf.step(result, input);
                 }
@@ -466,12 +427,8 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var i = 0;
             Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result14) {
-                    return xf.result(_result14);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return fn(i++, input) == null ? result : xf.step(result, input);
                 }
@@ -483,12 +440,8 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var i = 0;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result15) {
-                    return xf.result(_result15);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return xf.step(result, fn(i++, input));
                 }
@@ -500,12 +453,8 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var arr = [];
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result16) {
-                    return xf.result(_result16);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
                     return arr.indexOf(input) === -1 ? (arr.push(input), xf.step(result, input)) : result;
                 }
@@ -517,14 +466,14 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var first = true;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result17) {
-                    return xf.result(_result17);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
-                    return first ? (first = false, xf.step(result, input)) : xf.step(xf.step(result, sep), input);
+                    if (first) {
+                        first = false;
+                        return xf.step(result, input);
+                    }
+                    return xf.step(xf.step(result, sep), input);
                 }
             });
         };
@@ -534,14 +483,14 @@ var seier = (function () { 'use strict';
         return function (xf) {
             var pv = void 0;
             return Object.freeze({
-                init: function init() {
-                    return xf.init();
-                },
-                result: function result(_result18) {
-                    return xf.result(_result18);
-                },
+                init: xf.init,
+                result: xf.result,
                 step: function step(result, input) {
-                    return pv !== input ? (pv = input, xf.step(result, input)) : result;
+                    if (pv !== input) {
+                        pv = input;
+                        return xf.step(result, input);
+                    }
+                    return result;
                 }
             });
         };
@@ -897,30 +846,33 @@ var seier = (function () { 'use strict';
         return x;
     });
 
+    var prototype = undefined;
+
     function DomAlgorithm() {
-        var _this = this;
-
         var transducer = identity;
-        var proto = {};
 
-        function run(item) {
-            return item instanceof Node ? into([], transducer, [item])[0] : into([], transducer, item);
+        if (!prototype) {
+            prototype = {};
+
+            Object.keys(dom).forEach(function (key) {
+                return prototype[key] = function () {
+                    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                        args[_key] = arguments[_key];
+                    }
+
+                    transducer = compose(map$1(curry.apply(undefined, [dom[key]].concat(args))), transducer);
+                    return prototype;
+                };
+            });
+
+            prototype.run = function (item) {
+                return item instanceof Node ? into([], transducer, [item])[0] : into([], transducer, item);
+            };
+
+            Object.freeze(prototype);
         }
 
-        Object.keys(dom).forEach(function (key) {
-            return proto[key] = function () {
-                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-                    args[_key] = arguments[_key];
-                }
-
-                transducer = compose(map$1(curry.apply(undefined, [dom[key]].concat(args))), transducer);
-                return _this;
-            };
-        });
-
-        proto.run = run;
-
-        return Object.freeze(proto);
+        return prototype;
     }
 
     function seier() {
