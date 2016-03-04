@@ -344,21 +344,21 @@ function isMouseEvent(evt) {
     return mouseEvts.indexOf(evt) !== -1;
 }
 
-function createMouseEvent(evt, {
-    screenX = 0,
-    screenY = 0,
-    clientX = 0,
-    clientY = 0,
-    ctrlKey = false,
-    shiftKey = false,
-    altKey = false,
-    metaKey = false,
-    button = 0,
-    buttons = 0,
-    relatedTarget = null,
-    region = null
+function createMouseEvent(evt, data = {
+    screenX: 0,
+    screenY: 0,
+    clientX: 0,
+    clientY: 0,
+    ctrlKey: false,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false,
+    button: 0,
+    buttons: 0,
+    relatedTarget: null,
+    region: null
 }) {
-    return new MouseEvent(evt, arguments[1]);
+    return new MouseEvent(evt, data);
 }
 
 const kbdEvts = ['keydown', 'keyup', 'keypress'];
@@ -367,21 +367,21 @@ function isKeyboardEvent(evt) {
     return kbdEvts.indexOf(evt) !== -1;
 }
 
-function createKeyboardEvent(evt, {
-    key = '',
-    code = '',
-    location = 0,
-    ctrlKey = false,
-    shiftKey = false,
-    altKey = false,
-    metaKey = false,
-    repeat = false,
-    isComposing = false,
-    charCode = 0,
-    keyCode = 0,
-    which = 0
+function createKeyboardEvent(evt, data = {
+    key: '',
+    code: '',
+    location: 0,
+    ctrlKey: false,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false,
+    repeat: false,
+    isComposing: false,
+    charCode: 0,
+    keyCode: 0,
+    which: 0
 }) {
-    return new KeyboardEvent(evt, arguments[1]);
+    return new KeyboardEvent(evt, data);
 }
 
 const touchEvts = [
@@ -394,16 +394,16 @@ function isTouchEvent(evt) {
     return touchEvts.indexOf(evt) !== -1;
 }
 
-function createTouchEvent(evt, {
-    touches = [],
-    targetTouches = [],
-    changedTouches = [],
-    ctrlKey = false,
-    shiftKey = false,
-    altKey = false,
-    metaKey = false
+function createTouchEvent(evt, data = {
+    touches: [],
+    targetTouches: [],
+    changedTouches: [],
+    ctrlKey: false,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false
 }) {
-    return new TouchEvent(evt, arguments[1]);
+    return new TouchEvent(evt, data);
 }
 
 const uiEvts = [
@@ -415,13 +415,13 @@ function isUIEvent(evt) {
     return uiEvts.indexOf(evt.substring(3)) !== -1;
 }
 
-function createUIEvent(evt, {
-    detail = 0,
-    view = window
+function createUIEvent(evt, data = {
+    detail: 0,
+    view: window
 }) {
-    return new UIEvent(evt, arguments[1]);
+        return new UIEvent(evt, data);
 }
 
-function createCustomEvent(evt, { detail = null }) {
-    return new CustomEvent(evt, arguments[1]);
+function createCustomEvent(evt, data = { detail: null }) {
+    return new CustomEvent(evt, data);
 }
