@@ -6,22 +6,25 @@ export default DomAlgorithm;
 
 const identity = map((x) => x);
 
+let prototype;
+
 function DomAlgorithm() {
     let transducer = identity;
-    let proto = {};
 
-    function run(item) {
-        return item instanceof Node ?
+    if( !prototype ) {
+        prototype = {};
+
+        Object.keys(dom).forEach((key) => prototype[key] = (...args) => {
+            transducer = compose(map(curry(dom[key], ...args)), transducer);
+            return prototype;
+        });
+
+        prototype.run = (item) => item instanceof Node ?
             into([], transducer, [item])[0] :
             into([], transducer, item);
+
+        Object.freeze(prototype);
     }
 
-    Object.keys(dom).forEach((key) => proto[key] = (...args) => {
-        transducer = compose(map(curry(dom[key], ...args)), transducer);
-        return this;
-    });
-
-    proto.run = run;
-
-    return Object.freeze(proto);
+    return prototype;
 }
