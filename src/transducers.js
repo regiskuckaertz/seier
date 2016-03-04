@@ -183,7 +183,7 @@ function set(obj, pair) {
 
 function wrap(xf) {
     return Object.freeze({
-        init: () => { throw new Error("There is no init call for a wrapped reducer") },
+        init() { throw new Error("There is no init call for a wrapped reducer") },
         result: (result) => result,
         step: xf
     });
@@ -191,16 +191,16 @@ function wrap(xf) {
 
 function map(fn) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
-        step: (result, input) => xf.step(result, fn(input))
+        init: xf.init,
+        result: xf.result,
+        step: (result, input) =>  xf.step(result, fn(input))
     });
 }
 
 function filter(pred) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
+        init: xf.init,
+        result: xf.result,
         step: (result, input) => pred(input) ? xf.result(result, input) : result
     });
 }
@@ -213,8 +213,8 @@ const remove = (pred) => filter(complement(pred));
 
 function cat(xf) {
     return Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
+        init: xf.init,
+        result: xf.result,
         step: (result, input) => reduce(xf, result, input)
     });
 }
@@ -231,31 +231,25 @@ function mapcat(fn) {
 
 function take(n) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
-        step: (result, input) => n === 0 ?
-            ensureReduced(result) :
-            (n--, xf.step(result, input))
+        init: xf.init,
+        result: xf.result,
+        step: (result, input) => n === 0 ? ensureReduced(result) : (n--, xf.step(result, input))
     });
 }
 
 function drop(n) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
-        step: (result, input) => n === 0 ?
-            xf.step(result, input) :
-            (n--, result)
+        init: xf.init,
+        result: xf.result,
+        step: (result, input) => n === 0 ? xf.step(result, input) : (n--, result)
     });
 }
 
 function takeWhile(pred) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
-        step: (result, input) => pred(input) ?
-            xf.step(result, input) :
-            ensureReduced(result)
+        init: xf.init,
+        result: xf.result,
+        step: (result, input) => pred(input) ? xf.step(result, input) : ensureReduced(result)
     });
 }
 
@@ -263,11 +257,15 @@ function dropWhile(pred) {
     return (xf) => {
         let dropping = true;
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
-            step: (result, input) => dropping && pred(input) ?
-                result :
-                (dropping = false, xf.step(result, input))
+            init: xf.init,
+            result: xf.result,
+            step(result, input) {
+                if( dropping && pred(input) ) {
+                    return result;
+                }
+                dropping = false;
+                return xf.step(result, input);
+            }
         });
     };
 }
@@ -276,9 +274,9 @@ function takeNth(nth) {
     return (xf) => {
         let n = 0;
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
-            step: (result, input) => {
+            init: xf.init,
+            result: xf.result,
+            step(result, input) {
                 n++;
                 return n % nth === 0 ?
                     xf.step(result, input) :
@@ -290,12 +288,9 @@ function takeNth(nth) {
 
 function replace(smap) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
-        step: (result, input) => xf.step(result, smap.hasOwnProperty(input) ?
-            smap[input] :
-            input
-        )
+        init: xf.init,
+        result: xf.result,
+        step: (result, input) => xf.step(result, smap.hasOwnProperty(input) ? smap[input] : input)
     });
 }
 
@@ -304,15 +299,15 @@ function partitionBy(fn) {
       let arr = [];
       let pval = void 0;
       return Object.freeze({
-         init: () => xf.init(),
-         result: (result) => {
+         init: xf.init,
+         result(result) {
              if( arr.length ) {
                  result = unreduced(xf.step(result, arr));
                  arr = [];
              }
              return xf.result(result);
          },
-         step: (result, input) => {
+         step(result, input) {
              let val = fn(input);
              let pv = pval;
              pval = val;
@@ -336,15 +331,15 @@ function partitionAll(n) {
     return (xf) => {
         let arr = [];
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => {
+            init: xf.init,
+            result(result) {
                 if( arr.length ) {
                     result = unreduced(xf.step(result, arr));
                     arr = [];
                 }
                 return xf.result(result);
             },
-            step: (result, input) => {
+            step(result, input) {
                 arr.push(input);
                 if( arr.length === n ) {
                     result = xf.step(result, arr);
@@ -358,8 +353,8 @@ function partitionAll(n) {
 
 function keep(fn) {
     return (xf) => Object.freeze({
-        init: () => xf.init(),
-        result: (result) => xf.result(result),
+        init: xf.init,
+        result: xf.result,
         step: (result, input) => fn(input) == null ? result : xf.step(result, input)
     });
 }
@@ -368,8 +363,8 @@ function keepIndexed(fn) {
     return (xf) => {
         let i = 0;
         Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
+            init: xf.init,
+            result: xf.result,
             step: (result, input) => fn(i++, input) == null ? result : xf.step(result, input)
         });
     };
@@ -394,8 +389,8 @@ function mapIndexed(fn) {
     return (xf) => {
         let i = 0;
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
+            init: xf.init,
+            result: xf.result,
             step: (result, input) => xf.step(result, fn(i++, input))
         });
     };
@@ -405,8 +400,8 @@ function distinct() {
     return (xf) => {
         let arr = [];
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
+            init: xf.init,
+            result: xf.result,
             step: (result, input) => arr.indexOf(input) === -1 ?
                 (arr.push(input), xf.step(result, input)) :
                 result
@@ -418,11 +413,15 @@ function interpose(sep) {
     return (xf) => {
         let first = true;
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
-            step: (result, input) => first ?
-                (first = false, xf.step(result, input)) :
-                xf.step(xf.step(result, sep), input)
+            init: xf.init,
+            result: xf.result,
+            step(result, input) {
+                if( first ) {
+                    first = false;
+                    return xf.step(result, input);
+                }
+                return xf.step(xf.step(result, sep), input);
+            }
         });
     };
 }
@@ -431,11 +430,15 @@ function dedupe() {
     return (xf) => {
         let pv = void 0;
         return Object.freeze({
-            init: () => xf.init(),
-            result: (result) => xf.result(result),
-            step: (result, input) => pv !== input ?
-                (pv = input, xf.step(result, input)) :
-                result
+            init: xf.init,
+            result: xf.result,
+            step(result, input) {
+                if( pv !== input ) {
+                    pv = input;
+                    return xf.step(result, input);
+                }
+                return result;
+            }
         });
     }
 }
