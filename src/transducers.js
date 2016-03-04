@@ -370,21 +370,6 @@ function keepIndexed(fn) {
     };
 }
 
-function MapIndexed(fn, xf) {
-  this.fn = fn;
-  this.i = 0;
-  this.xf = xf;
-}
-MapIndexed.prototype.init = function() {
-  return this.xf.init();
-}
-MapIndexed.prototype.result = function(result) {
-  return this.xf.result(result);
-}
-MapIndexed.prototype.step = function(result, input) {
-  return this.xf.step(result, this.fn(this.i++, input));
-}
-
 function mapIndexed(fn) {
     return (xf) => {
         let i = 0;
