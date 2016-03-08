@@ -582,6 +582,11 @@ var seier = (function () { 'use strict';
         }
     }
 
+    var functions = Object.freeze({
+        memoize: memoize,
+        curry: curry
+    });
+
     var cssRE = /^(?:[a-zA-Z_]|(-[a-zA-Z0-9_]))[a-zA-Z0-9_-]*$/;
 
     var mapToKey = memoize(function (dataAttr) {
@@ -846,41 +851,38 @@ var seier = (function () { 'use strict';
         return x;
     });
 
-    var prototype = undefined;
-
     function DomAlgorithm() {
         var transducer = identity;
+        var prototype = {};
 
-        if (!prototype) {
-            prototype = {};
+        Object.keys(dom).forEach(function (key) {
+            return prototype[key] = function () {
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                    args[_key] = arguments[_key];
+                }
 
-            Object.keys(dom).forEach(function (key) {
-                return prototype[key] = function () {
-                    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-                        args[_key] = arguments[_key];
-                    }
-
-                    transducer = compose(map$1(curry.apply(undefined, [dom[key]].concat(args))), transducer);
-                    return prototype;
-                };
-            });
-
-            prototype.run = function (item) {
-                return item instanceof Node ? into([], transducer, [item])[0] : into([], transducer, item);
+                transducer = compose(map$1(curry.apply(undefined, [dom[key]].concat(args))), transducer);
+                return prototype;
             };
+        });
 
-            Object.freeze(prototype);
-        }
+        prototype.run = function (item) {
+            return item instanceof Node || item === document ? into([], transducer, [item])[0] : isArray(item) ? into([], transducer, item) : item;
+        };
 
-        return prototype;
+        return Object.freeze(prototype);
     }
 
-    function seier() {
+    function seier(selector) {
+        return getAll(selector);
+    }
+
+    seier.do = function () {
         return DomAlgorithm();
-    }
-
+    };
     seier.dom = dom;
     seier.coll = transducers;
+    seier.fn = functions;
 
     return seier;
 

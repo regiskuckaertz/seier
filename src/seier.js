@@ -1,12 +1,15 @@
 import * as transducers from './transducers.js';
 import * as dom from './dom.js';
+import * as functions from './functions.js';
 import DomAlgorithm from './algorithm.js';
 
-function seier() {
-    return DomAlgorithm();
+function seier(selector) {
+    return dom.getAll(selector);
 }
 
+seier.do = () => DomAlgorithm();
 seier.dom = dom;
 seier.coll = transducers;
+seier.fn = functions;
 
 export default seier;
