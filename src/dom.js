@@ -61,7 +61,7 @@ function callMsg(msg, obj, param1, param2, ...rest) {
 
 /** Node selection */
 
-/* get(String|Element: selector, Element?: root): Element */
+/* get(String: selector, Element?: root): Element */
 function get(selector, root) {
     if( selector.charAt(0) === '#' && cssRE.test(selector.substring(1)) ) {
         return getById(selector);
@@ -223,12 +223,6 @@ const append = insertHtml('beforeend');
 const prepend = insertHtml('afterbegin');
 
 function insertElement(target, before, source, clone) {
-  if( arguments.length === 2 || arguments.length === 3 ) {
-    clone = source;
-    source = before;
-    before = null;
-  }
-
   target.insertBefore(clone ? source.cloneNode(true) : source, before);
   return parent;
 }
@@ -238,7 +232,7 @@ function afterElement(target, source, clone) {
 }
 
 function appendElement(target, source, clone) {
-  return insertElement(target, source, clone);
+  return insertElement(target, null, source, clone);
 }
 
 function beforeElement(target, source, clone) {
