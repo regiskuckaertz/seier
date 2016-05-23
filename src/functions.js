@@ -2,27 +2,84 @@ import {reduce} from './transducers.js';
 
 export {
     memoize,
-    curry
+    curry,
+    debounce,
+    throttle,
+    complement,
+    compose,
+    identity
 };
 
 function memoize(fn, arity) {
-    let memoized = {};
+    const memoized = new WeakMap();
     arity || (arity = fn.length);
-    return function(...args) {
-        var hash = reduce((res, arg) => res + arg.toString(), '', args);
-        return memoized[hash] !== undefined ?
-            memoized[hash] :
-            (memoized[hash] = fn(...args));
+    return (...args) => {
+        if( !memoized.has(args) ) {
+            memoized(args).set(fn(...args));
+        }
+        return memoized.get(args);
     }
 }
 
 function curry(fn, ...args) {
-    const len = fn.length - args.length;
-    switch( len ) {
-        case 0: return () => fn(...args);
-        case 1: return (arg) => fn(...args, arg);
-        case 2: return (arg1, arg2) => fn(...args, arg1, arg2);
-        case 3: return (arg1, arg2, arg3) => fn(...args, arg1, arg2, arg3);
-        default: return (...sargs) => fn(...args, ...sargs);
+    return fn.bind(undefined, ...args);
+}
+
+function debounce(fn, wait = 0, leading = false) {
+    let timer;
+    let shouldCall = false;
+    let first = leading;
+    return (...args) => {
+        if( !timer ) {
+            if( leading && first ) {
+                fn(...args);
+                first = false;
+            }
+        } else {
+            shouldCall = true;
+            window.clearTimeout(timer);
+        }
+        timer = window.setTimeout(() => {
+            if( !leading || shouldCall ) {
+                fn(...args);
+                shouldCall = false;
+            }
+            timer = null;
+        }, wait);
     }
+}
+
+function throttle(fn, wait = 0, leading = true) {
+    let timer;
+    let shouldCall = false;
+    return (...args) => {
+        if( !timer ) {
+            if( leading ) {
+                fn(...args);
+            }
+            timer = window.setTimeout(() => {
+                if( !leading || shouldCall ) {
+                    fn(...args);
+                    shouldCall = false;
+                }
+                timer = null;
+            });
+        } else {
+            shouldCall = true;
+        }
+    }
+}
+
+function complement(fn) {
+    return (...args) => !fn(...args);
+}
+
+function compose(f, g, ...rest) {
+    return rest.length === 0 ?
+        (...args) => f(g(...args)) :
+        compose(f, compose(g, ...rest));
+}
+
+function identity(x) {
+    return x;
 }

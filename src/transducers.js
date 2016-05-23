@@ -1,5 +1,7 @@
 'use strict';
 
+import { complement, compose } from './functions.js';
+
 export {
     isString,
     isArray,
@@ -84,10 +86,10 @@ function reduce(fn, init, coll) {
         return stringReduce(fn, init, coll);
     } else if( isArray(coll) ) {
         return arrayReduce(fn, init, coll);
-    } else if( isIterable(coll) ) {
-        return iterableReduce(fn, init, coll);
     } else if( isObject(coll) ) {
         return objectReduce(fn, init, coll);
+    } else if( isIterable(coll) ) {
+        return iterableReduce(fn, init, coll);
     } else {
         throw coll + " is not a reducible collection";
     }
@@ -95,7 +97,7 @@ function reduce(fn, init, coll) {
 
 function stringReduce(fn, init, str) {
     for( let char of str ) {
-        init = fn(init, char);
+        init = fn.step(init, char);
         if( isReduced(init) ) {
             init = deref(init);
             break;
@@ -115,6 +117,18 @@ function arrayReduce(fn, init, arr) {
     return fn.result(init);
 }
 
+function objectReduce(fn, init, obj) {
+    let keys = Object.keys(obj);
+    for( let key of keys ) {
+        init = fn.step(init, obj[key]);
+        if( isReduced(init) ) {
+            init = deref(init);
+            break;
+        }
+    }
+    return fn.result(init);
+}
+
 function iterableReduce(fn, init, iter) {
     iter = iter[Symbol.iterator]();
     let step = iter.next();
@@ -125,18 +139,6 @@ function iterableReduce(fn, init, iter) {
             break;
         }
         step = iter.next();
-    }
-    return fn.result(init);
-}
-
-function objectReduce(fn, init, obj) {
-    let keys = Object.keys(obj);
-    for( let key of keys ) {
-        init = fn.step(init, obj[key]);
-        if( isReduced(init) ) {
-            init = deref(init);
-            break;
-        }
     }
     return fn.result(init);
 }
@@ -205,11 +207,7 @@ function filter(pred) {
     });
 }
 
-function complement(fn) {
-    return (...args) => !fn(...args);
-}
-
-const remove = (pred) => filter(complement(pred));
+const remove = pred => filter(complement(pred));
 
 function cat(xf) {
     return Object.freeze({
@@ -217,12 +215,6 @@ function cat(xf) {
         result: xf.result,
         step: (result, input) => reduce(xf, result, input)
     });
-}
-
-function compose(f, g, ...rest) {
-    return rest.length === 0 ?
-        (...args) => f(g(...args)) :
-        compose(f, compose(g, ...rest));
 }
 
 function mapcat(fn) {
@@ -233,7 +225,13 @@ function take(n) {
     return (xf) => Object.freeze({
         init: xf.init,
         result: xf.result,
-        step: (result, input) => n === 0 ? ensureReduced(result) : (n--, xf.step(result, input))
+        step(result, input) {
+            if( n === 0 ) {
+                return ensureReduced(result);
+            }
+            n -= 1;
+            return xf.step(result, input);
+        }
     });
 }
 
@@ -241,7 +239,13 @@ function drop(n) {
     return (xf) => Object.freeze({
         init: xf.init,
         result: xf.result,
-        step: (result, input) => n === 0 ? xf.step(result, input) : (n--, result)
+        step(result, input) {
+            if( n === 0 ) {
+                return xf.step(result, input);
+            }
+            n -= 1;
+            return result;
+        }
     });
 }
 
