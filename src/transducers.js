@@ -55,7 +55,7 @@ function isString(x) {
 }
 
 function isArray(x) {
-    return  x instanceof Array             ||
+    return  Array.isArray(x)               ||
             isArrayLike(x)                 ||
             x instanceof Int8Array         ||
             x instanceof Uint8Array        ||
