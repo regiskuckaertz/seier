@@ -10,7 +10,7 @@ function seier(selector) {
 
 seier.do = () => DomAlgorithm();
 seier.dom = dom;
-seier.coll = transducers;
+seier.xform = transducers;
 seier.fn = functions;
 seier.async = async;
 
