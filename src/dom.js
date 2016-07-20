@@ -1,6 +1,6 @@
 'use strict';
 
-import {reduce, filter, into} from './transducers.js';
+import {reduce, filter, map, into} from './transducers.js';
 import {memoize, curry} from './functions.js';
 
 export {
