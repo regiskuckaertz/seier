@@ -1,5 +1,3 @@
-import {reduce} from './transducers.js';
-
 export {
     memoize,
     curry,
